@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { useRouter } from 'next/router';
 
@@ -40,7 +39,6 @@ interface PostProps {
 
 export default function Post({ post }: PostProps): JSX.Element {
   const router = useRouter();
-  const [wordAmoung, setWordAmount] = useState(0);
 
   if (router.isFallback) {
     return (
