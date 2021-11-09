@@ -39,27 +39,8 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): JSX.Element {
-  const [wordAmoung, setWordAmount] = useState(0);
   const router = useRouter();
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-    const calculateReading = () => {
-      const result = post.data.content.reduce((acc, curr) => {
-        const headingAmount = curr.heading.split(' ').length;
-        const bodyAmount = RichText.asText(curr.body).split(' ').length;
-
-        // eslint-disable-next-line no-param-reassign
-        acc += headingAmount + bodyAmount;
-
-        return acc;
-      }, 0);
-
-      setWordAmount(Math.round(result / 200));
-    };
-
-    calculateReading();
-  }, []);
+  const [wordAmoung, setWordAmount] = useState(0);
 
   if (router.isFallback) {
     return (
@@ -68,6 +49,21 @@ export default function Post({ post }: PostProps): JSX.Element {
       </div>
     );
   }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  const calculateReading = () => {
+    const result = post.data.content.reduce((acc, curr) => {
+      const headingAmount = curr.heading.split(' ').length;
+      const bodyAmount = RichText.asText(curr.body).split(' ').length;
+
+      // eslint-disable-next-line no-param-reassign
+      acc += headingAmount + bodyAmount;
+
+      return acc;
+    }, 0);
+
+    return Math.ceil(result / 200);
+  };
 
   return (
     <>
@@ -84,7 +80,9 @@ export default function Post({ post }: PostProps): JSX.Element {
             <div>
               <p>
                 <FiCalendar className={commonStyles.icon} />
-                {post.first_publication_date}
+                {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,
+                })}
               </p>
               <p>
                 <FiUser className={commonStyles.icon} />
@@ -92,7 +90,7 @@ export default function Post({ post }: PostProps): JSX.Element {
               </p>
               <p>
                 <FiClock className={commonStyles.icon} />
-                {`${wordAmoung} min`}
+                {`${calculateReading()} min`}
               </p>
             </div>
           </section>
@@ -140,20 +138,18 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const response = await prismic.getByUID('pos', String(slug), {});
 
   const post = {
-    first_publication_date: format(
-      new Date(response.first_publication_date),
-      'dd MMM yyyy',
-      { locale: ptBR }
-    ),
+    uid: response.uid,
+    first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
+      subtitle: response.data.subtitle,
       banner: {
         url: response.data.banner.url,
       },
       author: response.data.author,
       content: response.data.content.map(content => ({
         heading: content.heading,
-        body: content.body.map(bContent => ({ text: bContent.text })),
+        body: content.body.map(bContent => bContent),
       })),
     },
   };

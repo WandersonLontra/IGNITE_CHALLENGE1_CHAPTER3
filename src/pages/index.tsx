@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { GetStaticProps } from 'next';
 import Link from 'next/link';
@@ -34,11 +34,8 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps): JSX.Element {
-  const [posts, setPosts] = useState(postsPagination.results);
-  const [nextUrl, setNextUrl] = useState('');
-  const [checkUrl, setCheckUrl] = useState('');
+  const [posts, setPosts] = useState(postsPagination);
   // eslint-disable-next-line prettier/prettier
-  const [loadMorePosts, setLoadMorePosts] = useState(!!postsPagination.next_page);
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   const formatPost = (postsToFormat: Post[]) => {
@@ -59,38 +56,33 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
     });
   };
 
-  useEffect(() => {
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  const getMorePosts = async () => {
     try {
-      (async () => {
-        const response = await (await fetch(nextUrl)).json();
+      const response = await (await fetch(posts.next_page)).json();
 
-        const formattedPosts = formatPost(response.results);
+      const formattedPosts = formatPost(response.results);
 
-        const totalPosts = posts;
+      const totalPosts = posts.results;
 
-        totalPosts.push(...formattedPosts);
-
-        setPosts(totalPosts);
-
-        if (!response.next_page) {
-          setLoadMorePosts(false);
-        } else {
-          setCheckUrl(response.next_page);
-        }
-      })();
+      totalPosts.push(...formattedPosts);
+      setPosts({
+        next_page: response.next_page,
+        results: totalPosts,
+      });
     } catch (error) {
       console.log(error.message);
     }
-  }, [nextUrl]);
+  };
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   function handleLoadMorePosts() {
-    setNextUrl(checkUrl === '' ? postsPagination.next_page : checkUrl);
+    getMorePosts();
   }
 
   return (
     <main className={styles.container}>
-      {posts.map(post => (
+      {posts.results.map(post => (
         <Link href={`/post/${post.uid}`} key={post.uid}>
           <div className={styles.postContent}>
             <h1>{post.data.title}</h1>
@@ -98,7 +90,9 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
             <div>
               <p>
                 <FiCalendar className={commonStyles.icon} />
-                {post.first_publication_date}
+                {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,
+                })}
               </p>
               <p>
                 <FiUser className={commonStyles.icon} />
@@ -109,7 +103,7 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
         </Link>
       ))}
 
-      {loadMorePosts ? (
+      {posts.next_page ? (
         <button type="button" onClick={handleLoadMorePosts}>
           Carregar mais posts
         </button>
@@ -134,11 +128,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const posts = postsResponse.results.map(post => {
     return {
       uid: post.uid,
-      first_publication_date: format(
-        new Date(post.first_publication_date),
-        'dd MMM yyyy',
-        { locale: ptBR }
-      ),
+      first_publication_date: post.first_publication_date,
       data: {
         title: post.data.title,
         subtitle: post.data.subtitle,
