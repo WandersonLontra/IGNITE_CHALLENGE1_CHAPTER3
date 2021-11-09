@@ -36,7 +36,9 @@ interface HomeProps {
 export default function Home({ postsPagination }: HomeProps): JSX.Element {
   const [posts, setPosts] = useState(postsPagination.results);
   const [nextUrl, setNextUrl] = useState('');
-  const [newPosts, setNewPosts] = useState(!!postsPagination.next_page);
+  const [checkUrl, setCheckUrl] = useState('');
+  // eslint-disable-next-line prettier/prettier
+  const [loadMorePosts, setLoadMorePosts] = useState(!!postsPagination.next_page);
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   const formatPost = (postsToFormat: Post[]) => {
@@ -58,33 +60,32 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
   };
 
   useEffect(() => {
-    (async () => {
-      const response = await (await fetch(nextUrl)).json();
+    try {
+      (async () => {
+        const response = await (await fetch(nextUrl)).json();
 
-      if (!response.next_page) {
-        setNewPosts(false);
-      }
+        const formattedPosts = formatPost(response.results);
 
-      const formattedPosts = formatPost(response.results);
+        const totalPosts = posts;
 
-      const totalPosts = posts;
+        totalPosts.push(...formattedPosts);
 
-      totalPosts.push(...formattedPosts);
+        setPosts(totalPosts);
 
-      setPosts(totalPosts);
-
-      setNextUrl('');
-    })();
+        if (!response.next_page) {
+          setLoadMorePosts(false);
+        } else {
+          setCheckUrl(response.next_page);
+        }
+      })();
+    } catch (error) {
+      console.log(error.message);
+    }
   }, [nextUrl]);
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   function handleLoadMorePosts() {
-    if (!postsPagination.next_page) {
-      alert('There are no more posts!');
-      return;
-    }
-
-    setNextUrl(postsPagination.next_page);
+    setNextUrl(checkUrl === '' ? postsPagination.next_page : checkUrl);
   }
 
   return (
@@ -96,15 +97,11 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
             <p>{post.data.subtitle}</p>
             <div>
               <p>
-                <span>
-                  <FiCalendar />
-                </span>
+                <FiCalendar className={commonStyles.icon} />
                 {post.first_publication_date}
               </p>
               <p>
-                <span>
-                  <FiUser />
-                </span>
+                <FiUser className={commonStyles.icon} />
                 {post.data.author}
               </p>
             </div>
@@ -112,7 +109,7 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
         </Link>
       ))}
 
-      {newPosts ? (
+      {loadMorePosts ? (
         <button type="button" onClick={handleLoadMorePosts}>
           Carregar mais posts
         </button>
@@ -129,6 +126,7 @@ export const getStaticProps: GetStaticProps = async () => {
     Prismic.predicates.at('document.type', 'pos'),
     {
       fetch: ['pos.title', 'pos.subtitle', 'pos.author'],
+      orderings: '[document.first_publication_date desc, my.pos.title]',
       pageSize: 1,
     }
   );
