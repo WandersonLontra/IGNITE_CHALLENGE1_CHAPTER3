@@ -9,12 +9,14 @@
 }
 
 .container{
-    margin: 5rem  auto 0;
+    margin: 5rem  auto;
     max-width: 720px;
+    padding-left: 1.25rem;
+
+    
 }
 
 .introduce{
-    padding-left: 1.25rem;
 
     h1{
         font-size: 3rem;
@@ -44,11 +46,19 @@
             }
         }        
     }
+
+    p {
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        font-weight: 400;
+        font-style: italic;
+        line-height: 1rem;
+        color: var(--gray-500);
+    }
 }
 
 .blogContent{
-    padding-left: 1.25rem;
-    margin: 0 auto;
+    margin: 0 auto 3.75rem auto;
 
     h2{
        margin: 4rem 0 3.5rem 0;
@@ -81,6 +91,84 @@
     font-weight: 700;
     line-height: 3.62rem;
 
-    color: var(--grey-100);
+    color: var(--gray-100);
+    }
+}
+
+.blogFeatures{
+    position: relative;
+    width: 100%;
+    padding-top: 3rem;
+
+    aside a{
+        margin-top: 5.5rem;
+        width: 100%;
+        height: 3.625rem;
+        border-radius: 4px;
+        background: var(--gray-100);
+
+        color: var(--gray-900);
+        font-size: 1.125rem;
+        font-weight: 600;
+        line-height: 1.375rem;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        transition: filter 0.2s;
+
+        &:hover{
+            filter: brightness(0.85);
+        }
+    }
+
+    &::before{
+        content:'';
+        width: 100%;
+        height: 1px;
+        background-color: var(--gray-500);
+        filter: brightness(0.4);
+
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}
+
+.postNavigation{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    div p {
+        font-size: 1.125rem;
+    }
+
+    div.prevPost{
+        flex: 1;
+    }
+
+    div.nextPost{
+        text-align: right;
+        flex: 1;
+    }
+
+    a{
+        background: transparent;
+        border: none;
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--pink-500);
+
+        cursor: pointer;
+
+        transition: filter 0.2s;
+
+        &:hover{
+            filter: brightness(0.8);
+        }
     }
 }

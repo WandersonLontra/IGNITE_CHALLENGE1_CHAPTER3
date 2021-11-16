@@ -20,6 +20,29 @@
             filter: brightness(0.8);
         }
     }
+
+    aside a{
+        margin-top: 5.5rem;
+        width: 100%;
+        height: 3.625rem;
+        border-radius: 4px;
+        background: var(--gray-100);
+
+        color: var(--gray-900);
+        font-size: 1.125rem;
+        font-weight: 600;
+        line-height: 1.375rem;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        transition: filter 0.2s;
+
+        &:hover{
+            filter: brightness(0.85);
+        }
+    }
 }
 
 .postContent{

@@ -31,11 +31,14 @@ interface PostPagination {
 
 interface HomeProps {
   postsPagination: PostPagination;
+  preview: boolean;
 }
 
-export default function Home({ postsPagination }: HomeProps): JSX.Element {
+export default function Home({
+  postsPagination,
+  preview,
+}: HomeProps): JSX.Element {
   const [posts, setPosts] = useState(postsPagination);
-  // eslint-disable-next-line prettier/prettier
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   const formatPost = (postsToFormat: Post[]) => {
@@ -110,11 +113,22 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
       ) : (
         ''
       )}
+
+      {preview && (
+        <aside>
+          <Link href="/api/exit-preview">
+            <a>Sair do modo Preview</a>
+          </Link>
+        </aside>
+      )}
     </main>
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({
+  preview = false,
+  previewData,
+}) => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
     Prismic.predicates.at('document.type', 'pos'),
@@ -122,9 +136,9 @@ export const getStaticProps: GetStaticProps = async () => {
       fetch: ['pos.title', 'pos.subtitle', 'pos.author'],
       orderings: '[document.first_publication_date desc, my.pos.title]',
       pageSize: 1,
+      ref: previewData?.ref ?? null,
     }
   );
-
   const posts = postsResponse.results.map(post => {
     return {
       uid: post.uid,
@@ -143,6 +157,7 @@ export const getStaticProps: GetStaticProps = async () => {
         next_page: postsResponse.next_page,
         results: posts,
       },
+      preview,
     },
     revalidate: 60 * 30,
   };
