@@ -16,6 +16,7 @@ import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
+import Comments from '../../components/Comments';
 
 interface Post {
   prevPost: {
@@ -151,6 +152,7 @@ export default function Post({ post, preview }: PostProps): JSX.Element {
                 ''
               )}
             </div>
+            <Comments />
             {preview && (
               <aside>
                 <Link href="/api/exit-preview">
